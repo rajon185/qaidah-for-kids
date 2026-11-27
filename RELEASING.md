@@ -17,25 +17,24 @@ Download it from the run's *Artifacts* section to test on a tablet before releas
 
 ## Making a release
 
-1. **Open a pull request from `develop` into `main`** and merge it once CI is green.
-2. **Tag the release** from an up-to-date `main`:
-   ```bash
-   git checkout main && git pull
-   npm run release -- 1.0.0
-   ```
-   The script bumps `package.json`, commits `Release v1.0.0`, creates tag `v1.0.0`, pushes,
-   and merges `main` back into `develop`.
-3. **Wait for the Release workflow** (Actions tab, about 5–8 minutes). It:
-   - checks the tag is on `main`,
-   - builds the web app and the Android release APK,
-   - sets the Android version from the tag (`v1.2.3` → versionName `1.2.3`, versionCode `10203`),
-   - publishes a GitHub Release with `qaidah-for-kids-v1.0.0.apk` and its SHA-256 checksum.
+1. **Merge `develop` into `main`:** open a pull request from `develop` into `main` and merge it once CI is green.
+2. **Press the release button:**
+   1. Go to the **Actions** tab and choose **Release** on the left.
+   2. Click **Run workflow** (top right of the run list).
+   3. Leave *Use workflow from* as **Branch: main**, type the version (for example `1.0.0`), and click the green **Run workflow** button.
+3. **Wait about 5–8 minutes.** The workflow:
+   - checks the version is new and that it's running on `main`,
+   - builds the web app and the signed Android release APK,
+   - sets the Android version from the number you typed (`1.2.3` → versionName `1.2.3`, versionCode `10203`),
+   - creates the `v1.0.0` tag and a GitHub Release with `qaidah-for-kids-v1.0.0.apk` and its SHA-256 checksum.
 
-**Or, from the browser:** on GitHub open **Releases → Draft a new release**, type a new tag such as `v1.0.0`, set the target to `main`, click *Generate release notes*, then **Publish release**. The workflow attaches the APK to that release within a few minutes.
+The APK then appears on the **Releases** page (right-hand side of the repository's main page).
 
-Without the script, the manual equivalent is `git tag -a v1.0.0 -m "Release v1.0.0" && git push origin v1.0.0` on `main`.
+**Other ways to release (all do the same thing):**
+- **Releases page:** *Draft a new release*, type a new tag such as `v1.0.0`, target `main`, then *Publish release*. The APK is attached a few minutes later.
+- **From a computer:** on an up-to-date `main`, run `npm run release -- 1.0.0`. This also bumps `package.json` and merges `main` back into `develop`.
 
-Version numbers follow `MAJOR.MINOR.PATCH`, and each part must stay below 100.
+Version numbers follow `MAJOR.MINOR.PATCH`, and each part must be between 0 and 99.
 Always increase the version: Android refuses to install an update with a lower versionCode.
 
 ## Signing the APK (one-time setup)
