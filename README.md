@@ -33,6 +33,12 @@ All 12 lessons follow the order of the Noorani Qaidah:
 - **A break whenever needed.** The 🫧 button is always in the same corner and opens a calm breathing circle.
 - **Child-proof grown-ups area.** Press and hold for 2 seconds to open settings, progress and recording.
 
+## IndoPak script
+
+Letters are shown in the **IndoPak (South Asian) style** used in printed Noorani Qaidahs, with sukoon drawn as a **jazm**.
+This uses the openly licensed [SIL Lateef](https://software.sil.org/lateef/) font (SIL Open Font License, bundled in `fonts/`).
+Families who learned from Madani-style mushafs can switch to **Arabic (Madani)** in the grown-ups area (*Script style*).
+
 ## Tablet-first
 
 - Touch targets are at least 64px. Accidental zoom, text selection and long-press menus are disabled on child screens.

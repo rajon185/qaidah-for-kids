@@ -1,8 +1,9 @@
 // Offline support: cache the app shell, then serve cache-first.
-const CACHE = 'qaidah-v2';
+const CACHE = 'qaidah-v3';
 const SHELL = ['./', 'index.html', 'styles.css', 'js/data.js', 'js/audio.js', 'js/app.js', 'manifest.json', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/fonts.css', 'fonts/noto-naskh-arabic-arabic-500-normal.woff2', 'fonts/noto-naskh-arabic-arabic-700-normal.woff2',
-  'fonts/nunito-latin-600-normal.woff2', 'fonts/nunito-latin-800-normal.woff2', 'audio/manifest.json'];
+  'fonts/nunito-latin-600-normal.woff2', 'fonts/nunito-latin-800-normal.woff2', 'audio/manifest.json',
+  'fonts/lateef-arabic-700-normal.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
