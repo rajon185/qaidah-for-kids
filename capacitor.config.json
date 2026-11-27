@@ -1,0 +1,10 @@
+{
+  "appId": "io.github.rajon185.qaidah",
+  "appName": "Qaidah for Kids",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#eef3ee",
+    "allowMixedContent": false,
+    "captureInput": true
+  }
+}

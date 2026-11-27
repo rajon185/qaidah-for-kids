@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Qaidah for Kids</string>
+    <string name="title_activity_main">Qaidah for Kids</string>
+    <string name="package_name">io.github.rajon185.qaidah</string>
+    <string name="custom_url_scheme">io.github.rajon185.qaidah</string>
+</resources>
