@@ -1,0 +1,22 @@
+{
+  "name": "qaidah-for-kids",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Calm, tablet-first Noorani Qaidah app for autistic children",
+  "license": "MIT",
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs",
+    "android:sync": "npm run build:web && npx cap sync android",
+    "android:open": "npx cap open android",
+    "serve": "python3 -m http.server 8000",
+    "release": "bash scripts/release.sh"
+  },
+  "dependencies": {
+    "@capacitor-community/text-to-speech": "^8.0.2",
+    "@capacitor/android": "^8.6.3",
+    "@capacitor/core": "^8.6.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.6.3"
+  }
+}

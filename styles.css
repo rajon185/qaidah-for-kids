@@ -243,3 +243,5 @@ a { color: inherit; text-decoration: none; }
   .rec-row { grid-template-columns: 70px 1fr auto auto; }
   .rec-row .rec-hint { display: none; }
 }
+.share-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.share-row label.btn { flex-direction: row; font-weight: 800; }
