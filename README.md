@@ -36,7 +36,11 @@ All 12 lessons follow the order of the Noorani Qaidah:
 ## IndoPak script
 
 Letters are shown in the **IndoPak (South Asian) style** used in printed Noorani Qaidahs, with sukoon drawn as a **jazm**.
-This uses the openly licensed [SIL Lateef](https://software.sil.org/lateef/) font (SIL Open Font License, bundled in `fonts/`).
+
+- **With the Dua & Hadith app's font:** add `fonts/indopak-quranwbw.ttf` ("AlQuran IndoPak by QuranWBW") as described in [`fonts/README.md`](fonts/README.md), and the app uses it automatically.
+  > ⚠️ That font is **not** openly licensed: it may not be distributed without written permission from quranwbw.com. Use it for private family use only, and read `fonts/README.md` before making this repository or its APKs public.
+- **Without it:** the app uses the bundled, openly licensed [SIL Lateef](https://software.sil.org/lateef/) font, which also has IndoPak-style letters and a jazm.
+
 Families who learned from Madani-style mushafs can switch to **Arabic (Madani)** in the grown-ups area (*Script style*).
 
 ## Tablet-first

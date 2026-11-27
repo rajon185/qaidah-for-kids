@@ -29,8 +29,16 @@
 
   // ---------- Helpers ----------
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  // Arabic for display. IndoPak style writes sukoon as a jazm (U+06E1). Speech keeps the original text.
-  const ar = s => esc(settings.script === 'indopak' ? String(s).replace(/\u0652/g, '\u06E1') : s);
+  // Arabic for display. Speech always uses the original text.
+  // The IndoPak font draws sukoon (U+0652) as a jazm itself. If it is missing and the
+  // Lateef fallback is used, swap in the Quranic jazm character (U+06E1) instead.
+  let jazmFallback = false;
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load('40px IndoPak', 'بْ')
+      .then(faces => faces.some(f => f.status === 'loaded'), () => false)
+      .then(ok => { if (!ok) { jazmFallback = true; route(); } });
+  }
+  const ar = s => esc(settings.script === 'indopak' && jazmFallback ? String(s).replace(/\u0652/g, '\u06E1') : s);
   const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const lessonById = id => lessons.find(l => l.id === id);
   const go = hash => { location.hash = hash; };

@@ -18,8 +18,8 @@
   --gutter: clamp(16px, 3vw, 32px);
   --font-ui: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
   /* IndoPak (South Asian) script by default; Madani/Arabic style is a setting. */
-  --font-ar: 'Lateef', 'Noto Naskh Arabic', 'Geeza Pro', serif;
-  --ar-scale: 1.3;
+  --font-ar: 'IndoPak', 'Lateef', 'Noto Naskh Arabic', 'Geeza Pro', serif;
+  --ar-scale: 1;
   --anim: 1;
 }
 :root[data-theme="warm"] {

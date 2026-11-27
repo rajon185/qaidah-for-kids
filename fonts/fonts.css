@@ -5,3 +5,7 @@
 @font-face { font-family: 'Nunito'; font-style: normal; font-weight: 800; font-display: swap; src: url('nunito-latin-800-normal.woff2') format('woff2'); }
 /* SIL Lateef: South Asian (IndoPak-style) Arabic script. SIL Open Font License 1.1, see LICENSE-Lateef-OFL.txt */
 @font-face { font-family: 'Lateef'; font-style: normal; font-weight: 400 800; font-display: swap; src: url('lateef-arabic-700-normal.woff2') format('woff2'); }
+/* IndoPak Quran script: "AlQuran IndoPak by QuranWBW" (same font as the Dua & Hadith app).
+   Its licence does not allow distribution without written permission from quranwbw.com:
+   used here for private, personal (family) use only. See fonts/README.md. */
+@font-face { font-family: 'IndoPak'; font-style: normal; font-weight: 400 800; font-display: block; src: url('indopak-quranwbw.ttf') format('truetype'); }
