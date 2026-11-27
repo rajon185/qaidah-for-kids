@@ -9,7 +9,7 @@
     sound: true, chime: true, volume: 0.8, rate: 0.7,
     autoSpeak: true, sessionSize: 5, choices: 2,
     reduceMotion: false, theme: 'calm', textSize: 1,
-    showHints: false, reward: 'star', childName: '', voiceId: '',
+    showHints: false, reward: 'star', childName: '', voiceId: '', script: 'indopak',
   };
   const load = (k, d) => { try { return { ...d, ...JSON.parse(localStorage.getItem(k)) }; } catch { return { ...d }; } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } };
@@ -21,6 +21,7 @@
   function applySettings() {
     const root = document.documentElement;
     root.dataset.theme = settings.theme;
+    root.dataset.script = settings.script;
     root.dataset.motion = settings.reduceMotion ? 'reduce' : 'ok';
     root.style.setProperty('--text-scale', settings.textSize);
   }
@@ -28,6 +29,16 @@
 
   // ---------- Helpers ----------
   const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Arabic for display. Speech always uses the original text.
+  // The IndoPak font draws sukoon (U+0652) as a jazm itself. If it is missing and the
+  // Lateef fallback is used, swap in the Quranic jazm character (U+06E1) instead.
+  let jazmFallback = false;
+  if (document.fonts && document.fonts.load) {
+    document.fonts.load('40px IndoPak', 'بْ')
+      .then(faces => faces.some(f => f.status === 'loaded'), () => false)
+      .then(ok => { if (!ok) { jazmFallback = true; route(); } });
+  }
+  const ar = s => esc(settings.script === 'indopak' && jazmFallback ? String(s).replace(/\u0652/g, '\u06E1') : s);
   const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
   const lessonById = id => lessons.find(l => l.id === id);
   const go = hash => { location.hash = hash; };
@@ -124,7 +135,7 @@
         <main class="learn">
           ${firstThen(1)}
           <button class="big-card ${it.small ? 'small-text' : ''}" id="card" aria-label="Hear it">
-            <span class="arabic" lang="ar" dir="rtl">${esc(it.text)}</span>
+            <span class="arabic" lang="ar" dir="rtl">${ar(it.text)}</span>
             ${settings.showHints ? `<span class="hint">${esc(it.hint)}</span>` : ''}
           </button>
           <div class="controls">
@@ -168,7 +179,7 @@
           ${firstThen(2)}
           <button class="btn speak-btn prompt" id="again" aria-label="Hear again">🔊 Find</button>
           <div class="choices choices-${options.length}">
-            ${options.map((o, k) => `<button class="choice ${o.small ? 'small-text' : ''}" data-k="${k}"><span class="arabic" lang="ar" dir="rtl">${esc(o.text)}</span></button>`).join('')}
+            ${options.map((o, k) => `<button class="choice ${o.small ? 'small-text' : ''}" data-k="${k}"><span class="arabic" lang="ar" dir="rtl">${ar(o.text)}</span></button>`).join('')}
           </div>
           <div class="dots">
             ${rounds.map((_, k) => `<span class="${k < r ? 'done' : k === r ? 'now' : ''}"></span>`).join('')}
@@ -269,6 +280,7 @@
           ${range('textSize', 'Letter size', 0.8, 1.4, 0.1)}
           ${select('sessionSize', 'Cards per session', [[3, '3'], [5, '5'], [8, '8'], [10, '10']])}
           ${select('choices', 'Choices in "Find it"', [[2, '2 (easiest)'], [3, '3'], [4, '4']])}
+          ${select('script', 'Script style', [['indopak', 'IndoPak (South Asian Qaidah)'], ['madani', 'Arabic (Madani)']])}
           ${select('theme', 'Colours', [['calm', 'Calm (soft green)'], ['warm', 'Warm (sand)'], ['contrast', 'High contrast'], ['dark', 'Dark / low light']])}
           ${select('reward', 'Reward symbol', [['star', '⭐ Star'], ['heart', '💚 Heart'], ['moon', '🌙 Moon'], ['none', '✔️ Tick only']])}
           ${select('voiceId', 'Tablet voice', voiceOptions)}
@@ -339,7 +351,7 @@
         const lesson = lessonById(sel.value);
         list.innerHTML = lesson.items.map((it, k) => `
           <div class="rec-row">
-            <span class="arabic rec-text" lang="ar" dir="rtl">${esc(it.text)}</span>
+            <span class="arabic rec-text" lang="ar" dir="rtl">${ar(it.text)}</span>
             <span class="rec-hint">${esc(it.hint)}</span>
             <button class="btn rec-btn" data-k="${k}">${keys.has(it.key) ? '🔁 Re-record' : '🎙️ Record'}</button>
             <button class="btn" data-play="${k}">▶</button>
