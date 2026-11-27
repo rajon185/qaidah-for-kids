@@ -7,36 +7,50 @@
 // name: the letter's name as said in a Qaidah, fully vowelled so the tablet voice reads it
 // correctly (e.g. أَلِفْ "Alif", not ألف read as "alf"; بَا "Baa", not باء "baa'un").
 const LETTERS = [
-  { ch: 'ا', name: 'أَلِفْ', tr: 'Alif', joins: false },
-  { ch: 'ب', name: 'بَا', tr: 'Baa', joins: true },
-  { ch: 'ت', name: 'تَا', tr: 'Taa', joins: true },
-  { ch: 'ث', name: 'ثَا', tr: 'Thaa', joins: true },
-  { ch: 'ج', name: 'جِيمْ', tr: 'Jeem', joins: true },
-  { ch: 'ح', name: 'حَا', tr: 'Haa', joins: true },
-  { ch: 'خ', name: 'خَا', tr: 'Khaa', joins: true },
-  { ch: 'د', name: 'دَالْ', tr: 'Daal', joins: false },
-  { ch: 'ذ', name: 'ذَالْ', tr: 'Dhaal', joins: false },
-  { ch: 'ر', name: 'رَا', tr: 'Raa', joins: false },
-  { ch: 'ز', name: 'زَا', tr: 'Zaa', joins: false },
-  { ch: 'س', name: 'سِينْ', tr: 'Seen', joins: true },
-  { ch: 'ش', name: 'شِينْ', tr: 'Sheen', joins: true },
-  { ch: 'ص', name: 'صَادْ', tr: 'Saad', joins: true },
-  { ch: 'ض', name: 'ضَادْ', tr: 'Daad', joins: true },
-  { ch: 'ط', name: 'طَا', tr: 'Taa (heavy)', joins: true },
-  { ch: 'ظ', name: 'ظَا', tr: 'Dhaa (heavy)', joins: true },
-  { ch: 'ع', name: 'عَيْنْ', tr: "'Ayn", joins: true },
-  { ch: 'غ', name: 'غَيْنْ', tr: 'Ghayn', joins: true },
-  { ch: 'ف', name: 'فَا', tr: 'Faa', joins: true },
-  { ch: 'ق', name: 'قَافْ', tr: 'Qaaf', joins: true },
-  { ch: 'ك', name: 'كَافْ', tr: 'Kaaf', joins: true },
-  { ch: 'ل', name: 'لَامْ', tr: 'Laam', joins: true },
-  { ch: 'م', name: 'مِيمْ', tr: 'Meem', joins: true },
-  { ch: 'ن', name: 'نُونْ', tr: 'Noon', joins: true },
-  { ch: 'و', name: 'وَاوْ', tr: 'Waaw', joins: false },
-  { ch: 'ه', name: 'هَا', tr: 'Haa (light)', joins: true },
-  { ch: 'ء', name: 'هَمْزَهْ', tr: 'Hamzah', joins: false },
-  { ch: 'ي', name: 'يَا', tr: 'Yaa', joins: true },
+  { ch: 'ا', name: 'أَلِفْ', msa: 'ألف', tr: 'Alif', joins: false },
+  { ch: 'ب', name: 'بَا', msa: 'باء', tr: 'Baa', joins: true },
+  { ch: 'ت', name: 'تَا', msa: 'تاء', tr: 'Taa', joins: true },
+  { ch: 'ث', name: 'ثَا', msa: 'ثاء', tr: 'Thaa', joins: true },
+  { ch: 'ج', name: 'جِيمْ', msa: 'جيم', tr: 'Jeem', joins: true },
+  { ch: 'ح', name: 'حَا', msa: 'حاء', tr: 'Haa', joins: true },
+  { ch: 'خ', name: 'خَا', msa: 'خاء', tr: 'Khaa', joins: true },
+  { ch: 'د', name: 'دَالْ', msa: 'دال', tr: 'Daal', joins: false },
+  { ch: 'ذ', name: 'ذَالْ', msa: 'ذال', tr: 'Dhaal', joins: false },
+  { ch: 'ر', name: 'رَا', msa: 'راء', tr: 'Raa', joins: false },
+  { ch: 'ز', name: 'زَا', msa: 'زاي', tr: 'Zaa', joins: false },
+  { ch: 'س', name: 'سِينْ', msa: 'سين', tr: 'Seen', joins: true },
+  { ch: 'ش', name: 'شِينْ', msa: 'شين', tr: 'Sheen', joins: true },
+  { ch: 'ص', name: 'صَادْ', msa: 'صاد', tr: 'Saad', joins: true },
+  { ch: 'ض', name: 'ضَادْ', msa: 'ضاد', tr: 'Daad', joins: true },
+  { ch: 'ط', name: 'طَا', msa: 'طاء', tr: 'Taa (heavy)', joins: true },
+  { ch: 'ظ', name: 'ظَا', msa: 'ظاء', tr: 'Dhaa (heavy)', joins: true },
+  { ch: 'ع', name: 'عَيْنْ', msa: 'عين', tr: "'Ayn", joins: true },
+  { ch: 'غ', name: 'غَيْنْ', msa: 'غين', tr: 'Ghayn', joins: true },
+  { ch: 'ف', name: 'فَا', msa: 'فاء', tr: 'Faa', joins: true },
+  { ch: 'ق', name: 'قَافْ', msa: 'قاف', tr: 'Qaaf', joins: true },
+  { ch: 'ك', name: 'كَافْ', msa: 'كاف', tr: 'Kaaf', joins: true },
+  { ch: 'ل', name: 'لَامْ', msa: 'لام', tr: 'Laam', joins: true },
+  { ch: 'م', name: 'مِيمْ', msa: 'ميم', tr: 'Meem', joins: true },
+  { ch: 'ن', name: 'نُونْ', msa: 'نون', tr: 'Noon', joins: true },
+  { ch: 'و', name: 'وَاوْ', msa: 'واو', tr: 'Waaw', joins: false },
+  { ch: 'ه', name: 'هَا', msa: 'هاء', tr: 'Haa (light)', joins: true },
+  { ch: 'ء', name: 'هَمْزَهْ', msa: 'همزة', tr: 'Hamzah', joins: false },
+  { ch: 'ي', name: 'يَا', msa: 'ياء', tr: 'Yaa', joins: true },
 ];
+
+// Other spellings a grown-up can pick in the app if the tablet voice says a letter name
+// wrongly (voices differ between tablets). The first one is the default.
+function nameOptions(l) {
+  const opts = [l.name];
+  if (/\u064E\u0627$/.test(l.name)) {          // names like بَا "Baa": try longer forms
+    const base = l.name.slice(0, -1);             // بَ
+    opts.push(base + '\u0627\u0621\u0652');      // بَاءْ  (ends with a hamza stop)
+    opts.push(base + '\u0622');                  // بَآ   (madd sign: hold the aa)
+  }
+  opts.push(l.msa);                               // باء  (the voice's own reading)
+  return [...new Set(opts)];
+}
+LETTERS.forEach(l => { l.options = nameOptions(l); });
 
 const ZWJ = '‍';
 const FATHA = 'َ', KASRA = 'ِ', DAMMA = 'ُ';
@@ -62,7 +76,7 @@ const lessons = [
     titleAr: 'الحروف المفردة',
     icon: '🔤',
     about: 'The 29 letters, one at a time. Hear the name, look at the shape.',
-    items: LETTERS.map(l => ({ text: l.ch, say: l.name, hint: l.tr })),
+    items: LETTERS.map(l => ({ text: l.ch, say: l.name, hint: l.tr, letter: l.ch })),
   },
   {
     id: 'forms',
@@ -75,7 +89,7 @@ const lessons = [
       const forms = l.joins
         ? [l.ch, l.ch + ZWJ, ZWJ + l.ch + ZWJ, ZWJ + l.ch]
         : [l.ch, ZWJ + l.ch];
-      return { text: forms.join('  '), say: l.name, hint: `${l.tr} — ${l.joins ? 'alone · start · middle · end' : 'alone · end (does not join after)'}`, small: true };
+      return { text: forms.join('  '), say: l.name, letter: l.ch, hint: `${l.tr} — ${l.joins ? 'alone · start · middle · end' : 'alone · end (does not join after)'}`, small: true };
     }),
   },
   {

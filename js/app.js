@@ -9,7 +9,7 @@
     sound: true, chime: true, volume: 0.8, rate: 0.7,
     autoSpeak: true, sessionSize: 5, choices: 2,
     reduceMotion: false, theme: 'calm', textSize: 1,
-    showHints: false, reward: 'star', childName: '', voiceId: '', script: 'indopak',
+    showHints: false, reward: 'star', childName: '', voiceId: '', script: 'indopak', letterSay: {},
   };
   const load = (k, d) => { try { return { ...d, ...JSON.parse(localStorage.getItem(k)) }; } catch { return { ...d }; } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } };
@@ -320,6 +320,15 @@
         </section>
 
         <section class="panel">
+          <h2>Letter pronunciation</h2>
+          <p class="note">If the tablet voice says a letter's name wrongly, tap the letter, listen to each spelling with ▶, and choose the one that sounds right. For a perfect sound, record your own voice below.</p>
+          <div class="letter-picker" dir="rtl">
+            ${window.QAIDAH.LETTERS.map(l => `<button class="btn letter-btn ${settings.letterSay[l.ch] ? 'changed' : ''}" data-letter="${l.ch}" aria-label="${esc(l.tr)}"><span class="arabic" lang="ar">${ar(l.ch)}</span></button>`).join('')}
+          </div>
+          <div id="pronOptions"></div>
+        </section>
+
+        <section class="panel">
           <h2>Record your voice</h2>
           <p class="note">Many children respond best to a familiar voice. Record yourself saying each card; your recording plays instead of the tablet voice.</p>
           ${A.canRecord() ? `
@@ -346,6 +355,30 @@
     });
     document.getElementById('childName').addEventListener('input', e => { settings.childName = e.target.value.trim(); saveSettings(); });
     document.getElementById('testVoice').onclick = () => A.speak('بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ', { ...settings, sound: true });
+    const pron = document.getElementById('pronOptions');
+    const showPron = ch => {
+      const l = window.QAIDAH.LETTERS.find(x => x.ch === ch);
+      const current = settings.letterSay[ch] || l.options[0];
+      $app.querySelectorAll('.letter-btn').forEach(b => b.classList.toggle('selected', b.dataset.letter === ch));
+      pron.innerHTML = `<h3>${esc(l.tr)}</h3>` + l.options.map((o, k) => `
+        <div class="pron-row">
+          <button class="btn" data-play="${k}" aria-label="Play">▶</button>
+          <span class="arabic pron-text" lang="ar" dir="rtl">${esc(o)}</span>
+          <button class="btn ${o === current ? 'chosen' : ''}" data-use="${k}">${o === current ? '✔️ Using' : 'Use this'}</button>
+        </div>`).join('');
+      pron.querySelectorAll('[data-play]').forEach(b => { b.onclick = () => A.speak(l.options[+b.dataset.play], { ...settings, sound: true }); });
+      pron.querySelectorAll('[data-use]').forEach(b => {
+        b.onclick = () => {
+          const o = l.options[+b.dataset.use];
+          if (o === l.options[0]) delete settings.letterSay[ch]; else settings.letterSay[ch] = o;
+          saveSettings();
+          $app.querySelector(`.letter-btn[data-letter="${ch}"]`).classList.toggle('changed', !!settings.letterSay[ch]);
+          showPron(ch);
+        };
+      });
+    };
+    $app.querySelectorAll('.letter-btn').forEach(b => { b.onclick = () => showPron(b.dataset.letter); });
+
     const installBtn = document.getElementById('installVoice');
     if (installBtn) installBtn.onclick = () => A.installVoice();
     document.getElementById('exportRec').onclick = async () => {

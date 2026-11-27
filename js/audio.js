@@ -115,7 +115,9 @@ const Audio_ = (() => {
     const clip = await getClip(item.key);
     if (clip) return playBlobOrUrl(clip, settings);
     if (bundled[item.key]) return playBlobOrUrl(bundled[item.key], settings);
-    return speak(item.say, settings);
+    // A grown-up may have picked a different spelling for this letter's name (see grown-ups area).
+    const chosen = item.letter && settings.letterSay && settings.letterSay[item.letter];
+    return speak(chosen || item.say, settings);
   }
 
   function speak(text, settings) {
