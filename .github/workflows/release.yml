@@ -1,6 +1,7 @@
 name: Release
 
-# Pushing a tag like v1.2.3 (on main) builds a release APK and publishes a GitHub Release with it.
+# Pushing a tag like v1.2.3 (on main), or publishing a release with a new tag on GitHub's
+# Releases page, builds a release APK and attaches it to the GitHub Release.
 # See RELEASING.md.
 on:
   push:
@@ -93,8 +94,17 @@ jobs:
           if [ "${{ steps.signing.outputs.signed }}" != "true" ]; then
             NOTE=$'\n\n> ⚠️ This APK is signed with a debug key. Add the signing secrets (see RELEASING.md) before sharing widely.'
           fi
-          gh release create "$GITHUB_REF_NAME" \
-            "${{ steps.apk.outputs.file }}" "${{ steps.apk.outputs.file }}.sha256" \
-            --title "Qaidah for Kids ${GITHUB_REF_NAME}" \
-            --generate-notes \
-            --notes "Install on an Android tablet: download the APK below, open it, and allow installing from this source.${NOTE}"
+          FILES=("${{ steps.apk.outputs.file }}" "${{ steps.apk.outputs.file }}.sha256")
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            # The release was created on GitHub's Releases page: attach the APK to it.
+            gh release upload "$GITHUB_REF_NAME" "${FILES[@]}" --clobber
+            if [ -n "$NOTE" ]; then
+              BODY="$(gh release view "$GITHUB_REF_NAME" --json body --jq .body)"
+              gh release edit "$GITHUB_REF_NAME" --notes "${BODY}${NOTE}"
+            fi
+          else
+            gh release create "$GITHUB_REF_NAME" "${FILES[@]}" \
+              --title "Qaidah for Kids ${GITHUB_REF_NAME}" \
+              --generate-notes \
+              --notes "Install on an Android tablet: download the APK below, open it, and allow installing from this source.${NOTE}"
+          fi
