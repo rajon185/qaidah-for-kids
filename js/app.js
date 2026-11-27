@@ -49,16 +49,6 @@
     return Math.round((seen / lesson.items.length) * 100);
   }
 
-  // Pick the next small batch of items: unseen first, then least-practised.
-  function nextBatch(lesson) {
-    const size = Math.min(settings.sessionSize, lesson.items.length);
-    const unseen = lesson.items.filter(it => !progress.seen[it.key]);
-    if (unseen.length >= size) return unseen.slice(0, size);
-    const rest = lesson.items.filter(it => progress.seen[it.key])
-      .sort((a, b) => (progress.correct[a.key] || 0) - (progress.correct[b.key] || 0));
-    return [...unseen, ...rest].slice(0, size);
-  }
-
   // Top bar: always the same place, same buttons (predictability).
   function topBar({ back = '#/', title = '' } = {}) {
     return `
@@ -122,14 +112,24 @@
     el.addEventListener('contextmenu', e => e.preventDefault());
   }
 
+  // Cards follow the Qaidah order. Each lesson resumes where it was left, ◀ can always go
+  // back to the first card, and a quiz + reward comes after every `sessionSize` cards.
   function viewLearn(id) {
     const lesson = lessonById(id);
     if (!lesson) return go('#/');
-    const batch = nextBatch(lesson);
-    let i = 0;
+    const items = lesson.items;
+    const size = Math.min(settings.sessionSize, items.length);
+    progress.pos = progress.pos || {};
+    let i = progress.pos[id] || 0;
+    if (i >= items.length) i = 0;
+    let winStart = i; // first card of this session's window (quizzed at the end)
+
+    const winEnd = () => Math.min(winStart + size, items.length); // exclusive
+    function remember() { progress.pos[id] = i; saveProgress(); }
 
     function render() {
-      const it = batch[i];
+      const it = items[i];
+      const win = items.slice(winStart, winEnd());
       $app.innerHTML = `
         ${topBar({ title: `${lesson.icon} ${lesson.title}` })}
         <main class="learn">
@@ -143,21 +143,39 @@
             <button class="btn speak-btn" id="speak" aria-label="Listen">🔊</button>
             <button class="btn nav-btn next" id="next" aria-label="Next">▶</button>
           </div>
-          <div class="dots" aria-label="Card ${i + 1} of ${batch.length}">
-            ${batch.map((_, k) => `<span class="${k < i ? 'done' : k === i ? 'now' : ''}"></span>`).join('')}
+          <div class="dots" aria-label="Card ${i - winStart + 1} of ${win.length}">
+            ${win.map((_, k) => `<span class="${winStart + k < i ? 'done' : winStart + k === i ? 'now' : ''}"></span>`).join('')}
             <span class="dot-reward">${rewardIcon()}</span>
+          </div>
+          <div class="position">
+            <span>${i + 1} / ${items.length}</span>
+            ${i > 0 ? '<button class="btn small-btn" id="first" aria-label="Back to the first card">⏮ Start</button>' : ''}
           </div>
         </main>`;
       const speak = () => { A.say(it, settings); progress.seen[it.key] = true; saveProgress(); };
       document.getElementById('card').onclick = speak;
       document.getElementById('speak').onclick = speak;
-      document.getElementById('prev').onclick = () => { if (i > 0) { i--; render(); } };
+      const goTo = n => {
+        i = n;
+        if (i < winStart) winStart = i; // going back before this session: the window moves with you
+        remember();
+        render();
+      };
+      document.getElementById('prev').onclick = () => { if (i > 0) goTo(i - 1); };
+      const first = document.getElementById('first');
+      if (first) first.onclick = () => goTo(0);
       document.getElementById('next').onclick = () => {
-        progress.seen[it.key] = true; saveProgress();
-        if (i < batch.length - 1) { i++; render(); } else { viewQuiz(lesson, batch); }
+        progress.seen[it.key] = true;
+        if (i < winEnd() - 1) { goTo(i + 1); return; }
+        // End of this session's cards: quiz them, then the next visit continues after them.
+        const done = items.slice(winStart, winEnd());
+        i = winEnd() >= items.length ? 0 : winEnd();
+        remember();
+        viewQuiz(lesson, done);
       };
       if (settings.autoSpeak) setTimeout(speak, 350);
     }
+    remember();
     render();
   }
 
@@ -255,10 +273,11 @@
 
   // ---------- Grown-ups area ----------
   async function viewParent() {
+    await A.reloadVoices();
     const keys = new Set(await A.clipKeys());
     const voiceNote = A.hasArabicVoice()
       ? 'Tablet voices can sound robotic on single letters. For the most natural sound, record a teacher\'s voice below.'
-      : 'No Arabic voice found on this tablet. Install one in the tablet\'s text-to-speech settings, or record your own voice below.';
+      : 'No Arabic voice found on this tablet. Tap "Install Arabic voice" (or open the tablet\'s Settings → Text-to-speech → Google → Install voice data → Arabic), or record your own voice below.';
     const voiceOptions = [['', 'Best available (automatic)'], ...A.listVoices().map(v => [v.id, v.label])];
     const bundledNote = A.bundledCount() ? `<p class="note">✅ ${A.bundledCount()} teacher recordings are built into this app.</p>` : '';
     const totalSeen = Object.keys(progress.seen).length;
@@ -285,6 +304,7 @@
           ${select('reward', 'Reward symbol', [['star', '⭐ Star'], ['heart', '💚 Heart'], ['moon', '🌙 Moon'], ['none', '✔️ Tick only']])}
           ${select('voiceId', 'Tablet voice', voiceOptions)}
           <button class="btn" id="testVoice">🔊 Test voice</button>
+          ${A.canInstallVoice() ? '<button class="btn" id="installVoice">⬇️ Install Arabic voice</button>' : ''}
           <p class="note">${voiceNote}</p>
           ${bundledNote}
         </section>
@@ -326,6 +346,8 @@
     });
     document.getElementById('childName').addEventListener('input', e => { settings.childName = e.target.value.trim(); saveSettings(); });
     document.getElementById('testVoice').onclick = () => A.speak('بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ', { ...settings, sound: true });
+    const installBtn = document.getElementById('installVoice');
+    if (installBtn) installBtn.onclick = () => A.installVoice();
     document.getElementById('exportRec').onclick = async () => {
       const blob = await A.exportClips();
       const a = document.createElement('a');
@@ -341,7 +363,7 @@
       catch (err) { alert('That file could not be imported.'); }
     };
     document.getElementById('resetProgress').onclick = () => {
-      if (confirm('Reset all progress and rewards?')) { progress = { seen: {}, correct: {}, stars: 0, sessions: [] }; saveProgress(); viewParent(); }
+      if (confirm('Reset all progress and rewards?')) { progress = { seen: {}, correct: {}, stars: 0, sessions: [], pos: {} }; saveProgress(); viewParent(); }
     };
 
     if (A.canRecord()) {
