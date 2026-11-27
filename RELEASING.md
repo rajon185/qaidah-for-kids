@@ -31,6 +31,8 @@ Download it from the run's *Artifacts* section to test on a tablet before releas
    - sets the Android version from the tag (`v1.2.3` → versionName `1.2.3`, versionCode `10203`),
    - publishes a GitHub Release with `qaidah-for-kids-v1.0.0.apk` and its SHA-256 checksum.
 
+**Or, from the browser:** on GitHub open **Releases → Draft a new release**, type a new tag such as `v1.0.0`, set the target to `main`, click *Generate release notes*, then **Publish release**. The workflow attaches the APK to that release within a few minutes.
+
 Without the script, the manual equivalent is `git tag -a v1.0.0 -m "Release v1.0.0" && git push origin v1.0.0` on `main`.
 
 Version numbers follow `MAJOR.MINOR.PATCH`, and each part must stay below 100.
