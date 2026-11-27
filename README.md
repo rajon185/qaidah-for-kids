@@ -42,13 +42,32 @@ All 12 lessons follow the order of the Noorani Qaidah:
   - **Android (Chrome):** ⋮ menu → *Install app* / *Add to Home screen*.
 - Works offline after the first visit.
 
-### Voice
+### Voice: making it sound natural
 
-The app uses a recorded voice if one exists for a card. Otherwise it uses the tablet's built-in Arabic text-to-speech voice. If no Arabic voice is installed:
-- **iPad:** Settings → Accessibility → Spoken Content → Voices → Arabic.
+The app plays the best voice it has, in this order:
+
+1. **A recording made on this tablet** (grown-ups area → *Record your voice*).
+2. **Teacher recordings built into the app** (`audio/` folder, see below).
+3. **The tablet's text-to-speech voice.** The app picks the most natural Arabic voice available (neural/"enhanced"/network voices first) and lets you choose one under *Tablet voice*.
+
+Text-to-speech is reasonable for whole words but often **sounds robotic on single letters and harakat**, and it does not follow tajweed. For a natural, correct voice, **record a teacher or qari once and build it into the app**, so every tablet gets it:
+
+1. Record the cards in the grown-ups area (in a quiet room), then tap **Export**. This saves `qaidah-recordings.json`.
+2. Run `node scripts/import-recordings.mjs qaidah-recordings.json`. This writes `audio/<lesson>/<n>.webm` and `audio/manifest.json`.
+3. Commit `audio/` and release. The next APK plays these recordings.
+
+*Export* and *Import* also copy recordings straight from one tablet to another.
+
+If the tablet has no Arabic voice installed:
+- **iPad:** Settings → Accessibility → Spoken Content → Voices → Arabic (choose an *Enhanced* or *Premium* voice).
 - **Android:** Settings → Text-to-speech → Google TTS → Install voice data → Arabic.
 
-Tablet voices are not always accurate for single letters with harakat. For best results, and especially for correct tajweed, **record a teacher's or parent's voice** in the grown-ups area.
+## Android app (APK)
+
+Download the latest APK from the repository's **Releases** page, open it on the tablet, and allow installing from that source.
+The APK contains the whole app, so it works fully offline.
+
+Releases are built automatically when a version tag is pushed. See **[RELEASING.md](RELEASING.md)** for branches, the release process and signing.
 
 ## Run it
 
@@ -70,6 +89,11 @@ js/audio.js     Recorded voice, text-to-speech, gentle chime
 js/app.js       Screens: home, learn, find-it, reward, break, grown-ups
 sw.js           Offline cache
 manifest.json   Install-to-home-screen settings
+fonts/          Bundled fonts (works offline)
+audio/          Optional teacher recordings built into the app
+android/        Android (Capacitor) project used to build the APK
+scripts/        Web build, release and recording-import scripts
+.github/        CI (debug APK) and Release (tagged APK) workflows
 ```
 
 To add or change lesson content, edit `js/data.js`.

@@ -1,4 +1,5 @@
-// Audio: a familiar adult's recorded voice first, then the device's Arabic voice.
+// Audio: a familiar adult's recorded voice first, then recordings bundled with the app,
+// then the best-sounding Arabic voice on the device.
 // Also a soft, low-volume chime (no buzzers, no loud sounds).
 
 const Audio_ = (() => {
@@ -30,43 +31,116 @@ const Audio_ = (() => {
   const deleteClip = key => tx('readwrite', s => s.delete(key));
   const clipKeys = () => tx('readonly', s => s.getAllKeys()).catch(() => []);
 
+  // ---------- Bundled audio (real recordings shipped with the app) ----------
+  // audio/manifest.json maps item keys ("letters:0") to files. See scripts/import-recordings.mjs.
+  let bundled = {};
+  fetch('audio/manifest.json').then(r => (r.ok ? r.json() : {})).then(m => { bundled = (m && m.files) || {}; }).catch(() => {});
+
   // ---------- Speech synthesis ----------
-  let arabicVoice = null;
-  function pickVoice() {
-    if (!('speechSynthesis' in window)) return;
-    const voices = speechSynthesis.getVoices();
-    arabicVoice = voices.find(v => /^ar/i.test(v.lang)) || null;
+  // In the Android app (Capacitor) the WebView has no speechSynthesis, so use the
+  // native TextToSpeech plugin. In a browser, use the Web Speech API.
+  const cap = window.Capacitor;
+  const nativeTTS = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.registerPlugin
+    ? cap.registerPlugin('TextToSpeech') : null;
+
+  // All Arabic voices on the device, best first. Each: { id, name, lang, local, index, voice }.
+  let voices = [];
+
+  // Prefer natural/neural/high-quality voices; avoid compact or robotic engines.
+  function score(v) {
+    const name = `${v.name} ${v.id}`;
+    let s = 0;
+    if (/neural|natural|enhanced|premium|wavenet|studio|siri|online|network/i.test(name)) s += 4;
+    if (/google|microsoft|samsung/i.test(name)) s += 1;
+    if (/compact|eloquence|espeak|robot/i.test(name)) s -= 5;
+    if (/^ar[-_]SA/i.test(v.lang)) s += 1;
+    // Network voices sound better but need internet; fall back to on-device voices offline.
+    if (!v.local) s += navigator.onLine ? 2 : -6;
+    return s;
   }
-  if ('speechSynthesis' in window) {
-    pickVoice();
-    speechSynthesis.onvoiceschanged = pickVoice;
+  function rank(list) {
+    voices = list.filter(v => /^ar/i.test(v.lang)).sort((x, y) => score(y) - score(x));
   }
-  const hasArabicVoice = () => !!arabicVoice;
+
+  function loadVoices() {
+    if (nativeTTS) {
+      nativeTTS.getSupportedVoices().then(r => {
+        rank(((r && r.voices) || []).map((v, index) => ({ id: v.voiceURI || v.name, name: v.name, lang: v.lang, local: v.localService, index })));
+      }).catch(() => {});
+    } else if ('speechSynthesis' in window) {
+      rank(speechSynthesis.getVoices().map(v => ({ id: v.voiceURI || v.name, name: v.name, lang: v.lang, local: v.localService, voice: v })));
+    }
+  }
+  loadVoices();
+  if (!nativeTTS && 'speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
+  window.addEventListener('online', loadVoices);
+  window.addEventListener('offline', loadVoices);
+
+  const hasArabicVoice = () => voices.length > 0;
+  const listVoices = () => voices.map(v => ({ id: v.id, label: `${v.name} (${v.lang}${v.local ? '' : ', needs internet'})` }));
+  const chooseVoice = id => (id && voices.find(v => v.id === id)) || voices[0] || null;
 
   let current = null;
   function stop() {
     if (current) { current.pause(); current = null; }
-    if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (nativeTTS) nativeTTS.stop().catch(() => {});
+    else if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
 
+  function playBlobOrUrl(src, settings) {
+    const isBlob = src instanceof Blob;
+    const url = isBlob ? URL.createObjectURL(src) : src;
+    current = new Audio(url);
+    current.volume = settings.volume;
+    if (isBlob) current.onended = () => URL.revokeObjectURL(url);
+    return current.play().catch(() => {});
+  }
+
+  // Order: this tablet's own recording → recordings bundled with the app → device voice.
   async function say(item, settings) {
     if (!settings.sound) return;
     stop();
     const clip = await getClip(item.key);
-    if (clip) {
-      const url = URL.createObjectURL(clip);
-      current = new Audio(url);
-      current.volume = settings.volume;
-      current.onended = () => URL.revokeObjectURL(url);
-      return current.play().catch(() => {});
+    if (clip) return playBlobOrUrl(clip, settings);
+    if (bundled[item.key]) return playBlobOrUrl(bundled[item.key], settings);
+    return speak(item.say, settings);
+  }
+
+  function speak(text, settings) {
+    const v = chooseVoice(settings.voiceId);
+    if (nativeTTS) {
+      const opts = { text, lang: v ? v.lang : 'ar-SA', rate: settings.rate, pitch: 1.0, volume: settings.volume, category: 'playback' };
+      if (v) opts.voice = v.index;
+      return nativeTTS.speak(opts).catch(() => {});
     }
     if (!('speechSynthesis' in window)) return;
-    const u = new SpeechSynthesisUtterance(item.say);
-    u.lang = 'ar-SA';
-    if (arabicVoice) u.voice = arabicVoice;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = v ? v.lang : 'ar-SA';
+    if (v) u.voice = v.voice;
     u.rate = settings.rate;
     u.volume = settings.volume;
     speechSynthesis.speak(u);
+  }
+
+  // ---------- Export / import recordings (share one voice across tablets) ----------
+  const blobToDataURL = blob => new Promise((resolve, reject) => {
+    const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = () => reject(r.error); r.readAsDataURL(blob);
+  });
+  async function exportClips() {
+    const keys = await clipKeys();
+    const clips = {};
+    for (const k of keys) clips[k] = await blobToDataURL(await getClip(k));
+    return new Blob([JSON.stringify({ app: 'qaidah-for-kids', version: 1, clips })], { type: 'application/json' });
+  }
+  async function importClips(file) {
+    const data = JSON.parse(await file.text());
+    if (!data || !data.clips) throw new Error('Not a recordings file');
+    let n = 0;
+    for (const [k, dataUrl] of Object.entries(data.clips)) {
+      await saveClip(k, await (await fetch(dataUrl)).blob());
+      n++;
+    }
+    return n;
   }
 
   // ---------- Gentle chime ----------
@@ -110,7 +184,7 @@ const Audio_ = (() => {
   function stopRecording() { if (recorder && recorder.state !== 'inactive') recorder.stop(); }
   const canRecord = () => !!(navigator.mediaDevices && window.MediaRecorder);
 
-  return { say, stop, chime, hasArabicVoice, getClip, saveClip, deleteClip, clipKeys, startRecording, stopRecording, canRecord };
+  return { say, speak, stop, chime, hasArabicVoice, listVoices, getClip, saveClip, deleteClip, clipKeys, exportClips, importClips, startRecording, stopRecording, canRecord, bundledCount: () => Object.keys(bundled).length };
 })();
 
 window.QAudio = Audio_;

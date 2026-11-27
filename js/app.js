@@ -9,7 +9,7 @@
     sound: true, chime: true, volume: 0.8, rate: 0.7,
     autoSpeak: true, sessionSize: 5, choices: 2,
     reduceMotion: false, theme: 'calm', textSize: 1,
-    showHints: false, reward: 'star', childName: '',
+    showHints: false, reward: 'star', childName: '', voiceId: '',
   };
   const load = (k, d) => { try { return { ...d, ...JSON.parse(localStorage.getItem(k)) }; } catch { return { ...d }; } };
   const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked */ } };
@@ -246,8 +246,10 @@
   async function viewParent() {
     const keys = new Set(await A.clipKeys());
     const voiceNote = A.hasArabicVoice()
-      ? 'An Arabic voice was found on this tablet.'
+      ? 'Tablet voices can sound robotic on single letters. For the most natural sound, record a teacher\'s voice below.'
       : 'No Arabic voice found on this tablet. Install one in the tablet\'s text-to-speech settings, or record your own voice below.';
+    const voiceOptions = [['', 'Best available (automatic)'], ...A.listVoices().map(v => [v.id, v.label])];
+    const bundledNote = A.bundledCount() ? `<p class="note">✅ ${A.bundledCount()} teacher recordings are built into this app.</p>` : '';
     const totalSeen = Object.keys(progress.seen).length;
     const recent = progress.sessions.slice(-8).reverse();
 
@@ -269,7 +271,10 @@
           ${select('choices', 'Choices in "Find it"', [[2, '2 (easiest)'], [3, '3'], [4, '4']])}
           ${select('theme', 'Colours', [['calm', 'Calm (soft green)'], ['warm', 'Warm (sand)'], ['contrast', 'High contrast'], ['dark', 'Dark / low light']])}
           ${select('reward', 'Reward symbol', [['star', '⭐ Star'], ['heart', '💚 Heart'], ['moon', '🌙 Moon'], ['none', '✔️ Tick only']])}
+          ${select('voiceId', 'Tablet voice', voiceOptions)}
+          <button class="btn" id="testVoice">🔊 Test voice</button>
           <p class="note">${voiceNote}</p>
+          ${bundledNote}
         </section>
 
         <section class="panel">
@@ -290,6 +295,12 @@
             <select id="recLesson">${lessons.map(l => `<option value="${l.id}">${l.num}. ${esc(l.title)}</option>`).join('')}</select>
           </label>
           <div id="recList" class="rec-list"></div>` : '<p class="note">Recording is not supported in this browser.</p>'}
+          <h3>Share recordings</h3>
+          <p class="note">Export recordings to copy them to another tablet, or to build them into the app for everyone (see the README).</p>
+          <div class="share-row">
+            <button class="btn" id="exportRec">⬇️ Export</button>
+            <label class="btn">⬆️ Import<input type="file" id="importRec" accept="application/json,.json" hidden></label>
+          </div>
         </section>
       </main>`;
 
@@ -302,6 +313,21 @@
       });
     });
     document.getElementById('childName').addEventListener('input', e => { settings.childName = e.target.value.trim(); saveSettings(); });
+    document.getElementById('testVoice').onclick = () => A.speak('بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ', { ...settings, sound: true });
+    document.getElementById('exportRec').onclick = async () => {
+      const blob = await A.exportClips();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'qaidah-recordings.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    };
+    document.getElementById('importRec').onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      try { const n = await A.importClips(file); alert(`Imported ${n} recordings.`); viewParent(); }
+      catch (err) { alert('That file could not be imported.'); }
+    };
     document.getElementById('resetProgress').onclick = () => {
       if (confirm('Reset all progress and rewards?')) { progress = { seen: {}, correct: {}, stars: 0, sessions: [] }; saveProgress(); viewParent(); }
     };
