@@ -1,5 +1,5 @@
 // Offline support: cache the app shell, then serve cache-first.
-const CACHE = 'qaidah-v4';
+const CACHE = 'qaidah-v5';
 const SHELL = ['./', 'index.html', 'styles.css', 'js/data.js', 'js/audio.js', 'js/app.js', 'manifest.json', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'fonts/fonts.css', 'fonts/noto-naskh-arabic-arabic-500-normal.woff2', 'fonts/noto-naskh-arabic-arabic-700-normal.woff2',
   'fonts/nunito-latin-600-normal.woff2', 'fonts/nunito-latin-800-normal.woff2', 'audio/manifest.json',
