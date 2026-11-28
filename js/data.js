@@ -112,7 +112,7 @@ const lessons = [
       ['ع', 'غ'], ['ف', 'ق'], ['ك', 'ل'], ['ل', 'م'], ['م', 'ن'], ['ن', 'ه'], ['ه', 'ي'],
     ].map(([a, b]) => {
       const A = LETTERS.find(l => l.ch === a), B = LETTERS.find(l => l.ch === b);
-      return { text: a + b, say: `${A.name} ${B.name}`, hint: `${A.tr} ${B.tr}`, label: `${A.tr} · ${B.tr}`, heavy: A.heavy || B.heavy };
+      return { text: a + b, say: `${A.name} ${B.name}`, letters: [a, b], hint: `${A.tr} ${B.tr}`, label: `${A.tr} · ${B.tr}`, heavy: A.heavy || B.heavy };
     }),
   },
   {

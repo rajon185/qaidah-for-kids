@@ -116,7 +116,12 @@ const Audio_ = (() => {
     if (clip) return playBlobOrUrl(clip, settings);
     if (bundled[item.key]) return playBlobOrUrl(bundled[item.key], settings);
     // A grown-up may have picked a different spelling for this letter's name (see grown-ups area).
-    const chosen = item.letter && settings.letterSay && settings.letterSay[item.letter];
+    const picked = ch => settings.letterSay && settings.letterSay[ch];
+    if (item.letters && item.letters.some(picked)) {
+      const L = window.QAIDAH.LETTERS;
+      return speak(item.letters.map(ch => picked(ch) || L.find(l => l.ch === ch).name).join(' '), settings);
+    }
+    const chosen = item.letter && picked(item.letter);
     return speak(chosen || item.say, settings);
   }
 
