@@ -39,9 +39,19 @@ const Audio_ = (() => {
   // ---------- Speech synthesis ----------
   // In the Android app (Capacitor) the WebView has no speechSynthesis, so use the
   // native TextToSpeech plugin. In a browser, use the Web Speech API.
+  // The app has no bundler, so @capacitor/core's registerPlugin isn't loaded. Call the plugin
+  // through the native bridge (window.Capacitor.nativePromise) that the Android app injects.
   const cap = window.Capacitor;
-  const nativeTTS = cap && cap.isNativePlatform && cap.isNativePlatform() && cap.registerPlugin
-    ? cap.registerPlugin('TextToSpeech') : null;
+  const isNative = !!(cap && cap.isNativePlatform && cap.isNativePlatform() && cap.nativePromise);
+  const callTTS = (method, options = {}) => cap.nativePromise('TextToSpeech', method, options);
+  const nativeTTS = isNative ? {
+    speak: o => callTTS('speak', o),
+    stop: () => callTTS('stop'),
+    getSupportedVoices: () => callTTS('getSupportedVoices'),
+    openInstall: () => callTTS('openInstall'),
+  } : null;
+  // Android's speech engine starts up asynchronously; retry calls made before it is ready.
+  const retryOnce = fn => fn().catch(() => new Promise(r => setTimeout(r, 800)).then(fn));
 
   // All Arabic voices on the device, best first. Each: { id, name, lang, local, index, voice }.
   let voices = [];
@@ -64,12 +74,14 @@ const Audio_ = (() => {
 
   function loadVoices() {
     if (nativeTTS) {
-      nativeTTS.getSupportedVoices().then(r => {
+      return retryOnce(nativeTTS.getSupportedVoices).then(r => {
         rank(((r && r.voices) || []).map((v, index) => ({ id: v.voiceURI || v.name, name: v.name, lang: v.lang, local: v.localService, index })));
       }).catch(() => {});
-    } else if ('speechSynthesis' in window) {
+    }
+    if ('speechSynthesis' in window) {
       rank(speechSynthesis.getVoices().map(v => ({ id: v.voiceURI || v.name, name: v.name, lang: v.lang, local: v.localService, voice: v })));
     }
+    return Promise.resolve();
   }
   loadVoices();
   if (!nativeTTS && 'speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
@@ -103,15 +115,17 @@ const Audio_ = (() => {
     const clip = await getClip(item.key);
     if (clip) return playBlobOrUrl(clip, settings);
     if (bundled[item.key]) return playBlobOrUrl(bundled[item.key], settings);
-    return speak(item.say, settings);
+    // A grown-up may have picked a different spelling for this letter's name (see grown-ups area).
+    const chosen = item.letter && settings.letterSay && settings.letterSay[item.letter];
+    return speak(chosen || item.say, settings);
   }
 
   function speak(text, settings) {
     const v = chooseVoice(settings.voiceId);
     if (nativeTTS) {
-      const opts = { text, lang: v ? v.lang : 'ar-SA', rate: settings.rate, pitch: 1.0, volume: settings.volume, category: 'playback' };
+      const opts = { text, lang: v ? v.lang : 'ar', rate: settings.rate, pitch: 1.0, volume: settings.volume, category: 'playback' };
       if (v) opts.voice = v.index;
-      return nativeTTS.speak(opts).catch(() => {});
+      return retryOnce(() => nativeTTS.speak(opts)).catch(() => {});
     }
     if (!('speechSynthesis' in window)) return;
     const u = new SpeechSynthesisUtterance(text);
@@ -184,7 +198,11 @@ const Audio_ = (() => {
   function stopRecording() { if (recorder && recorder.state !== 'inactive') recorder.stop(); }
   const canRecord = () => !!(navigator.mediaDevices && window.MediaRecorder);
 
-  return { say, speak, stop, chime, hasArabicVoice, listVoices, getClip, saveClip, deleteClip, clipKeys, exportClips, importClips, startRecording, stopRecording, canRecord, bundledCount: () => Object.keys(bundled).length };
+  // Opens Android's "install voice data" screen so a grown-up can add the Arabic voice.
+  const canInstallVoice = () => !!nativeTTS;
+  const installVoice = () => (nativeTTS ? nativeTTS.openInstall().catch(() => {}) : undefined);
+
+  return { say, speak, stop, chime, hasArabicVoice, listVoices, canInstallVoice, installVoice, reloadVoices: loadVoices, getClip, saveClip, deleteClip, clipKeys, exportClips, importClips, startRecording, stopRecording, canRecord, bundledCount: () => Object.keys(bundled).length };
 })();
 
 window.QAudio = Audio_;

@@ -248,3 +248,18 @@ a { color: inherit; text-decoration: none; }
 }
 .share-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .share-row label.btn { flex-direction: row; font-weight: 800; }
+.position { display: flex; align-items: center; gap: 14px; color: var(--ink-soft); font-size: 18px; font-weight: 700; }
+.small-btn { min-height: 48px; min-width: 48px; padding: 0 16px; font-size: 16px; }
+@media (orientation: landscape) and (max-height: 820px) {
+  .learn { grid-template-rows: auto 1fr auto auto; }
+  .learn .big-card { grid-row: 2 / 5; }
+  .learn .position { grid-column: 2; grid-row: 4; flex-direction: column; gap: 6px; }
+}
+.letter-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.letter-btn { padding: 0; font-size: calc(30px * var(--ar-scale)); }
+.letter-btn .arabic { line-height: 1; }
+.letter-btn.changed { border-color: var(--good); background: var(--accent-soft); }
+.letter-btn.selected { border-color: var(--accent); border-width: 4px; }
+.pron-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pron-text { font-size: calc(34px * var(--ar-scale)); text-align: center; }
+.btn.chosen { border-color: var(--good); background: var(--accent-soft); }
