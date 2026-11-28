@@ -25,13 +25,22 @@ All 12 lessons follow the order of the Noorani Qaidah:
 ## Designed for autistic learners
 
 - **The same routine every time.** A visual schedule (👀 Look → 👂 Listen → 👆 Tap → ⭐ Reward) shows what comes next.
-- **Short sessions.** 3–10 cards (adjustable). Progress dots show how many are left before the reward.
+- **Learns fully without sound.** Audio is optional, and every activity works with sound off:
+  - each card shows a big **sound label** (*ba · bi · bu*, *baa*, *Ḍaad*),
+  - the "Find it" game is visual.
+- **Colour coding**, as in many printed children's Qaidahs:
+  - **fathah** red, **kasrah** blue, **dammah** green;
+  - **full-mouth letters** (خ ص ض غ ط ق ظ) are purple with a 💪 *full mouth* badge, so tafkheem can be seen as well as heard.
+- **Errorless "Find it" game.** Each card starts as **find the same shape**. Once it's known (right first time twice), the game asks for it **by name** instead.
+  - Choices are shown in plain ink, so the child looks at the shape rather than matching colours.
+  - A wrong tap makes no buzzer and no red: that choice fades and the right one glows softly.
+- **Short sessions.** 3–10 cards (adjustable), in Qaidah order. Each lesson continues where it was left, and ◀ / ⏮ *Start* always go back to the first card.
+- **Mastery stars.** Each lesson on the home screen shows ★–★★★ as more of its cards become known, so you can see when it's solid.
 - **One thing on screen at a time.** Big letters, plenty of space, no clutter.
-- **Errorless learning.** "Find it" starts with only 2 choices. A wrong tap makes no buzzer and no red. That choice fades, the right one glows softly, and the sound plays again.
-- **A familiar voice.** Grown-ups can record their own voice for every card. It plays instead of the tablet's voice.
+- **A familiar voice (optional).** Grown-ups can record their own voice for every card, and it plays instead of the tablet's voice.
 - **Low sensory load.** Soft colours, a quiet chime (can be turned off), a "Reduce movement" switch, and themes: Calm, Warm, High contrast and Dark.
 - **A break whenever needed.** The 🫧 button is always in the same corner and opens a calm breathing circle.
-- **Child-proof grown-ups area.** Press and hold for 2 seconds to open settings, progress and recording.
+- **Child-proof grown-ups area.** Press and hold for 2 seconds to open settings, progress, pronunciation and recording.
 
 ## IndoPak script
 

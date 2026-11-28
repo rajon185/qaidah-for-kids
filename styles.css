@@ -248,3 +248,81 @@ a { color: inherit; text-decoration: none; }
 }
 .share-row { display: flex; gap: 12px; flex-wrap: wrap; }
 .share-row label.btn { flex-direction: row; font-weight: 800; }
+.position { display: flex; align-items: center; gap: 14px; color: var(--ink-soft); font-size: 18px; font-weight: 700; }
+.small-btn { min-height: 48px; min-width: 48px; padding: 0 16px; font-size: 16px; }
+@media (orientation: landscape) and (max-height: 820px) {
+  .learn { grid-template-rows: auto 1fr auto auto; }
+  .learn .big-card { grid-row: 2 / 5; }
+  .learn .position { grid-column: 2; grid-row: 4; flex-direction: column; gap: 6px; }
+}
+.letter-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(64px, 1fr)); gap: 8px; }
+.letter-btn { padding: 0; font-size: calc(30px * var(--ar-scale)); }
+.letter-btn .arabic { line-height: 1; }
+.letter-btn.changed { border-color: var(--good); background: var(--accent-soft); }
+.letter-btn.selected { border-color: var(--accent); border-width: 4px; }
+.pron-row { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.pron-text { font-size: calc(34px * var(--ar-scale)); text-align: center; }
+.btn.chosen { border-color: var(--good); background: var(--accent-soft); }
+
+/* ---------- Visual learning: colour coding, sound labels, mastery ---------- */
+/* Vowel colours follow a common children's-Qaidah convention; chosen to stay calm and to
+   remain distinguishable for the common colour-vision deficiencies (also differ in lightness). */
+:root {
+  --v-a: #c0503a;   /* fathah: warm red */
+  --v-i: #2f63b0;   /* kasrah: blue */
+  --v-u: #2b7d4f;   /* dammah: green */
+  --heavy: #7a3fa6; /* full-mouth letters: purple */
+  --gold: #d9a400;
+}
+:root[data-theme="dark"] { --v-a: #f08a74; --v-i: #8db4f2; --v-u: #79c99a; --heavy: #c79af0; --gold: #f2c94c; }
+:root[data-theme="contrast"] { --v-a: #b00000; --v-i: #0039a6; --v-u: #006b2e; --heavy: #5a0094; --gold: #8a6500; }
+.arabic.v-a, .sound-label.v-a, .colour-key .v-a { color: var(--v-a); }
+.arabic.v-i, .sound-label.v-i, .colour-key .v-i { color: var(--v-i); }
+.arabic.v-u, .sound-label.v-u, .colour-key .v-u { color: var(--v-u); }
+.arabic.heavy, .sound-label.heavy, .colour-key .heavy { color: var(--heavy); }
+
+.big-card { position: relative; }
+.sound-label {
+  font-family: var(--font-ui); font-weight: 800; color: var(--ink-soft);
+  font-size: clamp(26px, 4.2vw, 44px); line-height: 1.1; margin-top: 2px; direction: ltr;
+}
+.sound-label.big { font-size: clamp(40px, 7vw, 72px); color: var(--ink); }
+.heavy-badge {
+  position: absolute; top: 14px; right: 14px;
+  padding: 6px 12px; border-radius: 999px; font-size: 16px; font-weight: 800;
+  background: color-mix(in srgb, var(--heavy) 14%, var(--surface)); color: var(--heavy);
+  border: 2px solid color-mix(in srgb, var(--heavy) 40%, transparent);
+}
+
+.mastery { font-size: 22px; letter-spacing: 2px; color: var(--gold); line-height: 1; }
+.mastery .off { color: var(--line); }
+
+.prompt-row { display: flex; align-items: center; justify-content: center; gap: 18px; }
+.prompt-card {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 180px; padding: 6px 28px 10px; border-radius: var(--radius);
+  background: var(--accent-soft); border: 3px dashed var(--accent);
+}
+.prompt-card .arabic { font-size: calc(min(12vw, 14vh, 110px) * var(--text-scale) * var(--ar-scale)); font-weight: 700; line-height: 1.35; }
+.prompt-card.small-text .arabic { font-size: calc(min(6vw, 7vh, 52px) * var(--text-scale) * var(--ar-scale)); }
+.prompt-hint { font-size: 18px; font-weight: 800; color: var(--ink-soft); }
+.prompt-row .speak-btn { height: 80px; min-width: 96px; font-size: 34px; }
+
+.colour-key { display: flex; flex-wrap: wrap; gap: 8px; font-weight: 800; font-size: 17px; }
+.colour-key span { padding: 6px 12px; border-radius: 12px; background: var(--bg); border: 2px solid var(--line); }
+
+@media (orientation: landscape) and (max-height: 820px) {
+  .quiz { gap: 12px; }
+  .prompt-card .arabic { font-size: calc(min(10vw, 12vh, 96px) * var(--text-scale) * var(--ar-scale)); }
+  .choice { max-height: 38vh; }
+}
+
+/* Keep the grown-ups area inside narrow (phone) screens. */
+.parent { grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); }
+.panel { min-width: 0; }
+.panel select, .panel input[type="text"] { width: 100%; max-width: 100%; }
+.toggle > span:first-child { flex: 1; min-width: 0; padding-right: 12px; }
+@media (max-width: 600px) {
+  .prompt-card .arabic { font-size: calc(min(18vw, 14vh, 110px) * var(--text-scale) * var(--ar-scale)); }
+  .choice .arabic { font-size: calc(min(20vw, 16vh, 130px) * var(--text-scale) * var(--ar-scale)); }
+}
