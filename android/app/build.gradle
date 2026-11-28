@@ -60,6 +60,27 @@ dependencies {
 
 apply from: 'capacitor.build.gradle'
 
+// Copy the latest web app (index.html, js/, styles.css, ...) into the APK on every build, so
+// pressing Run in Android Studio never ships stale files. This is `cap copy`, not `cap sync`:
+// sync also rewrites Gradle files, which must not happen mid-build. After adding or removing a
+// Capacitor plugin, still run `npm run android:sync` once. Skip with -PskipWebCopy.
+def isWindows = System.getProperty('os.name').toLowerCase().contains('windows')
+def npx = isWindows ? ['cmd', '/c', 'npx'] : ['npx']
+def npm = isWindows ? ['cmd', '/c', 'npm'] : ['npm']
+interface InjectedExecOps { @javax.inject.Inject ExecOperations getExecOps() }
+def execOps = project.objects.newInstance(InjectedExecOps).execOps
+def webRoot = rootProject.projectDir.parentFile
+tasks.register('copyWebApp') {
+    group = 'capacitor'
+    description = 'Builds www/ and copies it into the Android assets'
+    onlyIf { !project.hasProperty('skipWebCopy') }
+    doLast {
+        execOps.exec { workingDir = webRoot; commandLine(npm + ['run', 'build:web']) }
+        execOps.exec { workingDir = webRoot; commandLine(npx + ['cap', 'copy', 'android']) }
+    }
+}
+tasks.named('preBuild') { dependsOn 'copyWebApp' }
+
 try {
     def servicesJSON = file('google-services.json')
     if (servicesJSON.text) {
